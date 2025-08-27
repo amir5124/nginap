@@ -12,6 +12,7 @@ const axios = require("axios");
 const nodemailer = require('nodemailer');
 const bodyParser = require("body-parser");
 const crypto = require('crypto');
+const puppeteer = require('puppeteer');
 const { initializeApp } = require("firebase/app");
 const {
   getDatabase,
@@ -753,23 +754,75 @@ function logToFile(message) {
   fs.appendFileSync('stderr.log', message + '\n');
 }
 
-async function sendEmailWithAttachment(dataJson) {
-  const primaryEmail = dataJson.sender_email;
+const invoiceTemplatePath = path.join(__dirname, 'template.html');
+const invoiceTemplate = fs.readFileSync(invoiceTemplatePath, 'utf8');
+
+// Fungsi untuk membuat PDF dari string HTML
+async function generatePDF(htmlContent) {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
+  const page = await browser.newPage();
+
+  await page.setContent(htmlContent, {
+    waitUntil: 'networkidle0'
+  });
+
+  const pdfBuffer = await page.pdf({
+    format: 'A4',
+    landscape: true,
+    printBackground: true,
+    margin: {
+      top: '10mm',
+      bottom: '10mm',
+      left: '10mm',
+      right: '10mm'
+    }
+  });
+
+  await browser.close();
+  return pdfBuffer;
+}
+
+// Fungsi utama yang menggabungkan pembuatan PDF dan pengiriman email
+async function sendEmailWithAttachment(dataJson, topup) {
+  const { sender_name, sender_email, bill_title, id, amount, created_at, status, sender_bank, sender_bank_type } = dataJson;
+  const { jumlahmalam } = topup;
+  const total = parseInt(jumlahmalam) * parseInt(amount);
+
+  const primaryEmail = sender_email;
   const defaultEmail = 'bocahangon64@gmail.com';
 
-  const filePath = path.join(__dirname, 'invoice.pdf'); // Path file PDF
+  // Mengisi template HTML dengan data
+  let renderedHtml = invoiceTemplate
+    .replace(/{{sender_name}}/g, sender_name)
+    .replace(/{{sender_email}}/g, sender_email)
+    .replace(/{{bill_title}}/g, bill_title)
+    .replace(/{{id}}/g, id)
+    .replace(/{{amount}}/g, amount)
+    .replace(/{{created_at}}/g, created_at)
+    .replace(/{{status}}/g, status)
+    .replace(/{{sender_bank}}/g, sender_bank)
+    .replace(/{{sender_bank_type}}/g, sender_bank_type)
+    .replace(/{{jumlahmalam}}/g, jumlahmalam)
+    .replace(/{{total}}/g, total);
 
-  // Membaca isi file PDF sekali
-  let pdfContent;
+  let pdfBuffer;
   try {
-    pdfContent = fs.readFileSync(filePath);
+    // 1. Buat PDF dari HTML yang sudah dirender
+    pdfBuffer = await generatePDF(renderedHtml);
+    const successMsg = 'PDF berhasil dibuat (menggunakan Puppeteer)';
+    console.log(successMsg);
+    // logToFile(successMsg); // Pastikan logToFile sudah terdefinisi
   } catch (error) {
-    const errorMsg = `Gagal membaca file PDF: ${error}`;
+    const errorMsg = `Gagal membuat PDF: ${error}`;
     console.error(errorMsg);
-    logToFile(errorMsg);
+    // logToFile(errorMsg);
     return;
   }
 
+  // 2. Siapkan opsi email dengan PDF buffer
   const emailOptions = {
     from: 'linkutransport@gmail.com',
     to: primaryEmail,
@@ -778,7 +831,7 @@ async function sendEmailWithAttachment(dataJson) {
     attachments: [
       {
         filename: 'invoice.pdf',
-        content: pdfContent, // Isi file PDF
+        content: pdfBuffer,
       },
     ],
   };
@@ -787,92 +840,27 @@ async function sendEmailWithAttachment(dataJson) {
     const info = await transporter.sendMail(emailOptions);
     const successMsg = `Email terkirim ke ${primaryEmail}: ${info.response}`;
     console.log(successMsg);
-    logToFile(successMsg);
-
-    // Hapus file setelah email terkirim
-    fs.unlinkSync(filePath);
+    // logToFile(successMsg);
   } catch (error) {
     const errorMsg = `Gagal mengirim email ke ${primaryEmail}: ${error}`;
     console.error(errorMsg);
-    logToFile(errorMsg);
+    // logToFile(errorMsg);
     console.log(`Mengirim ulang email ke alamat default ${defaultEmail}`);
 
-    // Mengubah tujuan email ke alamat default
     emailOptions.to = defaultEmail;
 
     try {
       const info = await transporter.sendMail(emailOptions);
       const successMsg = `Email terkirim ke alamat default ${defaultEmail}: ${info.response}`;
       console.log(successMsg);
-      logToFile(successMsg);
-
-      // Hapus file setelah email terkirim
-      fs.unlinkSync(filePath);
+      // logToFile(successMsg);
     } catch (error) {
       const errorMsg = `Gagal mengirim email ke alamat default ${defaultEmail}: ${error}`;
       console.error(errorMsg);
-      logToFile(errorMsg);
-    }
-  } finally {
-    // Hapus file setelah semua operasi selesai jika masih ada
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log('File PDF dihapus');
-      logToFile('File PDF dihapus');
+      // logToFile(errorMsg);
     }
   }
 }
-
-async function createPDFFromCallbackData(dataJson, topup) {
-  const { sender_name, sender_email, bill_title, id, amount, created_at, status, sender_bank, sender_bank_type } = dataJson;
-  const { jumlahmalam } = topup;
-  const total = parseInt(jumlahmalam) * parseInt(amount); // pastikan jumlahmalam dan amount adalah string yang bisa diubah ke integer
-
-  const options = {
-    format: "A4",
-    orientation: "landscape",
-    border: "10mm",
-    header: {
-      height: "10mm",
-    },
-    footer: {
-      height: "10mm",
-    },
-  };
-
-  const document = {
-    html: html,
-    data: {
-      total,
-      topup,
-      sender_name,
-      sender_email,
-      bill_title,
-      id,
-      amount,
-      created_at,
-      status,
-      sender_bank,
-      sender_bank_type
-    },
-    path: "invoice.pdf",
-    type: "",
-  };
-
-  try {
-    await pdf.create(document, options);
-    const successMsg = 'PDF berhasil dibuat';
-    console.log(successMsg);
-    logToFile(successMsg);
-    return true;
-  } catch (error) {
-    const errorMsg = `Gagal membuat PDF: ${error}`;
-    console.error(errorMsg);
-    logToFile(errorMsg);
-    return false;
-  }
-}
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
