@@ -27,8 +27,8 @@
     "path": "^0.12.7",
     "pdf-creator-node": "^2.3.5",
     "pdf-lib": "^1.17.1",
+    "phantomjs-prebuilt": "^2.1.16",
     "shortid": "^2.2.17",
-    "twilio": "^5.5.1",
-    "phantomjs-prebuilt": "^2.1.16"
+    "twilio": "^5.5.1"
   }
 }
