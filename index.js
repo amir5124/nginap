@@ -144,7 +144,7 @@ app.post('/create-va', async (req, res) => {
     const body = req.body;
     const partner_reff = generatePartnerReff();
     const expired = getExpiredTimestamp();
-    const url_callback = "https://wisata.siappgo.id/callback";
+    const url_callback = "https://hotel.siappgo.id/callback";
 
     const signature = generateSignaturePOST({
       amount: body.amount,
@@ -179,17 +179,7 @@ app.post('/create-va', async (req, res) => {
 
     // 🔹 Data untuk Firebase
     const insertData = {
-      partner_reff,
-      customer_id: body.customer_id,
-      customer_name: body.customer_name,
-      amount: body.amount,
-      bank_code: result?.bank_name || null,
-      expired,
-      customer_phone: body.customer_phone || null,
-      customer_email: body.customer_email,
-      va_number: result?.virtual_account || null,
-      response_raw: result,
-      created_at: new Date().toISOString(),
+
       status: "PENDING",
     };
 
