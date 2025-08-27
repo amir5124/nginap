@@ -1,0 +1,4 @@
+# Ignore the environment file
+.env
+# Direktori yang dihasilkan oleh Node.js
+node_modules/

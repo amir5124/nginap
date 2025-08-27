@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Booking Hotel</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .section-title {
+            font-weight: bold;
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .header {
+            padding: 10px;
+        }
+
+        .header-bg {
+            background-image: url('https://linku.co.id/headers.png');
+            background-repeat: no-repeat;
+            background-size: contain;
+            /* background-position: center; */
+            padding: 80px 0;
+            background-color: #fff;
+        }
+
+        .footer {
+            background-image: url('https://linku.co.id/bgfooter.png');
+            background-repeat: no-repeat;
+            background-size: contain;
+            /* background-position: center; */
+            padding: 130px 0;
+            background-color: #f1f1f1;
+        }
+
+        .footer p {
+            margin: 0;
+        }
+
+        p {
+            margin-bottom: 0;
+        }
+
+        .table th,
+        .table td {
+            border-top: none;
+            padding: 0.3rem;
+        }
+
+        @media (max-width: 576px) {
+            .footer {
+                background-size: contain;
+            }
+
+            .table-responsive {
+                overflow-x: auto;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.1rem;
+                /* Kurangi padding agar lebih dekat saat tampilan mobile */
+                font-size: 0.8rem;
+                /* Kurangi ukuran font untuk memastikan tidak terpotong */
+            }
+
+            .table tr {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.25rem;
+            }
+
+            .table td {
+                display: flex;
+                justify-content: space-between;
+                border-top: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .table td:last-child {
+                border-bottom: none;
+            }
+
+            .table tfoot tr {
+                flex-direction: column;
+                border: none;
+            }
+
+            .table tfoot tr th,
+            .table tfoot tr td {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .table tfoot tr td:last-child {
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-0">
+        <!-- Header -->
+        <div class="row header d-flex justify-content-between align-items-center header-bg">
+            <div class="col-6">
+                <p style="font-weight: bold; font-size: 16px;">BUKTI PEMBAYARAN</p>
+                <p>Nomor Invoice: {{topup.invoice}} </p>
+                <p>Nomor Reff: {{id}} </p>
+                <p>Tanggal: {{created_at}} </p>
+            </div>
+            <!-- <div class="col-6 text-right">
+                <img src="https://linku.co.id/linkuputih.png" style="width: 50%; height: auto;" alt="Company Logo">
+            </div> -->
+        </div>
+
+        <!-- Detail Pembayaran -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="section-title">Detail Pembayaran</div>
+                <p>Order ID: {{topup.id}} </p>
+                <p>Metode Pembayaran: {{sender_bank}} </p>
+                <p>Status Pembayaran: {{status}} </p>
+                <p>Jumlah Pembayaran: Rp. {{amount}} </p>
+                <p>Nama Merchant: {{topup.merchant}} </p>
+            </div>
+
+        </div>
+
+        <!-- Data Pemesan -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="section-title">Data Pemesan</div>
+                <p>Nama Pemesan: {{sender_name}} </p>
+                <p>Email Pemesan: {{sender_email}} </p>
+                <p>Telepon Pemesan: {{topup.nohp}} </p>
+            </div>
+        </div>
+
+        <!-- Data Tamu -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="section-title">Data Tamu</div>
+                <p>Nama Tamu: {{topup.tamu}} </p>
+                <p>Jumlah Tamu: {{topup.jumlahdewasa}} Dewasa, {{topup.jumlahanak}} Anak </p>
+            </div>
+        </div>
+
+        <!-- Detail Pembelian -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="section-title">Detail Pembelian</div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="padding: 0.3rem;">Deskripsi</th>
+                                <th style="padding: 0.3rem;">Jumlah</th>
+                                <th style="padding: 0.3rem;">Total</th>
+                                <th style="padding: 0.3rem;">Harga</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 0.3rem;">{{topup.namakamar}}</td>
+                                <td style="padding: 0.3rem;">{{topup.jumlahmalam}}</td>
+                                <td style="padding: 0.3rem;">{{total}}</td>
+                                <td style="padding: 0.3rem;">{{amount}}</td>
+
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="2" class="text-right" style="padding: 0.3rem;">Subtotal</th>
+                                <th style="padding: 0.3rem;">{{total}}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="2" class="text-right" style="padding: 0.3rem;">Diskon</th>
+                                <th style="padding: 0.3rem;">-</th>
+                            </tr>
+                            <tr>
+                                <th colspan="2" class="text-right" style="padding: 0.3rem;">Total</th>
+                                <th style="padding: 0.3rem;">{{total}}</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row footer mt-4">
+            <div class="col-12 text-center">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
