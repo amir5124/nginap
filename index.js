@@ -2,7 +2,6 @@ const express = require("express");
 const { Router } = require("express");
 const fs = require('fs');
 const moment = require('moment-timezone');
-const pdf = require("pdf-creator-node");
 const html = fs.readFileSync("template.html", "utf8");
 const twilio = require("twilio");
 const path = require('path');
