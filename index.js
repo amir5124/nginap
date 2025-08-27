@@ -191,10 +191,6 @@ app.post('/create-va', async (req, res) => {
       response_raw: result,
       created_at: new Date().toISOString(),
       status: "PENDING",
-      date: body.date || "2025-08-11",
-      name: body.name,
-      note: body.note || "",
-      pax: body.pax || "1"
     };
 
     // 💾 Simpan ke Firebase Realtime Database
