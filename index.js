@@ -230,7 +230,8 @@ app.post('/create-qris', async (req, res) => {
     const body = req.body;
     const partner_reff = generatePartnerReff();
     const expired = getExpiredTimestamp();
-    const url_callback = "https://wisata.siappgo.id/callback";
+    const url_callback = "https://hotel.siappgo.id/callback";
+    const user = body.nama;
 
     const signature = generateSignatureQRIS({
       amount: body.amount,
