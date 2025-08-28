@@ -211,7 +211,7 @@ app.post('/create-va', async (req, res) => {
     };
 
     // 💾 Simpan ke Firebase Realtime Database
-    await set(ref(databaseFire, `inquiry_va_hotel/${user}`), insertData);
+    await set(ref(databaseFire, `inquiry_va_hotel/${partner_reff}`), insertData);
 
     res.json(result);
   } catch (err) {
@@ -306,7 +306,7 @@ app.post('/create-qris', async (req, res) => {
     };
 
     // 💾 Simpan ke Firebase Realtime Database
-    await set(ref(databaseFire, `inquiry_qris_hotel/${user}`), insertData);
+    await set(ref(databaseFire, `inquiry_qris_hotel/${partner_reff}`), insertData);
 
     res.json(result);
 
