@@ -420,30 +420,30 @@ async function addBalance(partner_reff, va_code, serialnumber) {
     const originalAmount = parseInt(data.amount);
 
     // Nomor WhatsApp customer
-    const recipientWhatsApp = formatToWhatsAppNumber(data.customer_phone);
+    // const recipientWhatsApp = formatToWhatsAppNumber(data.customer_phone);
 
-    // Variabel template pesan WhatsApp
-    const variables = {
-      "1": String(data.customer_name || "Tidak tersedia"),
-      "2": String(data.partner_reff || "Tidak tersedia"),
-      "3": `Rp${originalAmount.toLocaleString("id-ID")}`,
-      "4": String(va_code),
-      "5": String(serialnumber),
+    // // Variabel template pesan WhatsApp
+    // const variables = {
+    //   "1": String(data.customer_name || "Tidak tersedia"),
+    //   "2": String(data.partner_reff || "Tidak tersedia"),
+    //   "3": `Rp${originalAmount.toLocaleString("id-ID")}`,
+    //   "4": String(va_code),
+    //   "5": String(serialnumber),
 
-      // tambahan dari body
-      "6": String(data.date || "2025-08-11"),
-      "7": String(data.name || "Tidak tersedia"),
-      "8": String(data.note || "tidak ada"),
-      "9": String(data.pax || "1"),
-    };
+    //   // tambahan dari body
+    //   "6": String(data.date || "2025-08-11"),
+    //   "7": String(data.name || "Tidak tersedia"),
+    //   "8": String(data.note || "tidak ada"),
+    //   "9": String(data.pax || "1"),
+    // };
 
-    // Kirim WhatsApp ke customer
-    await sendWhatsAppMessage(recipientWhatsApp, variables);
+    // // Kirim WhatsApp ke customer
+    // await sendWhatsAppMessage(recipientWhatsApp, variables);
 
     // Catatan transaksi
     const formattedAmount = originalAmount.toLocaleString("id-ID");
     const catatan = `Transaksi ${va_code} sukses || Nominal Rp${formattedAmount} || Biller Reff ${serialnumber} || Tanggal ${data.date || "2025-08-11"} || Nama ${data.name || "-"} || Note ${data.note || ""} || Pax ${data.pax || "1"}`;
-    const username = "Wisata";
+    const username = data.merchant;
 
     // Request ke API untuk update saldo
     const formdata = new FormData();
