@@ -145,6 +145,7 @@ app.post('/create-va', async (req, res) => {
     const partner_reff = generatePartnerReff();
     const expired = getExpiredTimestamp();
     const url_callback = "https://hotel.siappgo.id/callback";
+    const user = body.nama;
 
     const signature = generateSignaturePOST({
       amount: body.amount,
@@ -183,7 +184,7 @@ app.post('/create-va', async (req, res) => {
       customer_id: body.customer_id,
       customer_name: body.customer_name,
       amount: body.amount,
-      bank_code: result?.bank_name || null,
+      bank_code: result?.bank_name || body.bank_code || null,
       expired,
       customer_phone: body.customer_phone || null,
       customer_email: body.customer_email,
@@ -191,10 +192,26 @@ app.post('/create-va', async (req, res) => {
       response_raw: result,
       created_at: new Date().toISOString(),
       status: "PENDING",
+
+      // 🔹 Tambahkan field tambahan dari frontend
+      nama: body.nama,
+      title: body.title,
+      invoice: body.invoice,
+      tanggal: body.tanggal,
+      tanggalcheckin: body.tanggalcheckin,
+      tanggalcheckout: body.tanggalcheckout,
+      jumlahkamar: body.jumlahkamar,
+      jumlahdewasa: body.jumlahdewasa,
+      jumlahanak: body.jumlahanak,
+      jumlahmalam: body.jumlahmalam,
+      tamu: body.tamu,
+      namakamar: body.namakamar,
+      catatan: body.catatan,
+      merchant: body.merchant,
     };
 
     // 💾 Simpan ke Firebase Realtime Database
-    await set(ref(databaseFire, `inquiry_va_hotel/${partner_reff}`), insertData);
+    await set(ref(databaseFire, `inquiry_va_hotel/${user}`), insertData);
 
     res.json(result);
   } catch (err) {
@@ -261,22 +278,34 @@ app.post('/create-qris', async (req, res) => {
       customer_id: body.customer_id,
       customer_name: body.customer_name,
       amount: body.amount,
+      bank_code: result?.bank_name || body.bank_code || null,
       expired,
       customer_phone: body.customer_phone || null,
       customer_email: body.customer_email,
-      qris_url: result?.imageqris || null,
-      qris_image_base64: qrisImageBuffer || null,
+      va_number: result?.virtual_account || null,
       response_raw: result,
       created_at: new Date().toISOString(),
       status: "PENDING",
-      date: body.date || "2025-08-11",
-      name: body.name,
-      note: body.note || "",
-      pax: body.pax || "1"
+
+      // 🔹 Tambahkan field tambahan dari frontend
+      nama: body.nama,
+      title: body.title,
+      invoice: body.invoice,
+      tanggal: body.tanggal,
+      tanggalcheckin: body.tanggalcheckin,
+      tanggalcheckout: body.tanggalcheckout,
+      jumlahkamar: body.jumlahkamar,
+      jumlahdewasa: body.jumlahdewasa,
+      jumlahanak: body.jumlahanak,
+      jumlahmalam: body.jumlahmalam,
+      tamu: body.tamu,
+      namakamar: body.namakamar,
+      catatan: body.catatan,
+      merchant: body.merchant,
     };
 
     // 💾 Simpan ke Firebase Realtime Database
-    await set(ref(databaseFire, `inquiry_qris_hotel/${partner_reff}`), insertData);
+    await set(ref(databaseFire, `inquiry_qris_hotel/${user}`), insertData);
 
     res.json(result);
 
