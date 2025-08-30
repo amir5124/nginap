@@ -208,6 +208,7 @@ app.post('/create-va', async (req, res) => {
       namakamar: body.namakamar,
       catatan: body.catatan,
       merchant: body.merchant,
+      mitra: body.mitra,
     };
 
     // 💾 Simpan ke Firebase Realtime Database
@@ -303,6 +304,7 @@ app.post('/create-qris', async (req, res) => {
       namakamar: body.namakamar,
       catatan: body.catatan,
       merchant: body.merchant,
+      mitra: body.mitra,
     };
 
     // 💾 Simpan ke Firebase Realtime Database
@@ -443,7 +445,7 @@ async function addBalance(partner_reff, va_code, serialnumber) {
     // Catatan transaksi
     const formattedAmount = originalAmount.toLocaleString("id-ID");
     const catatan = `Transaksi ${va_code} sukses || Nominal Rp${formattedAmount} || Biller Reff ${serialnumber} || Tanggal ${data.date || "2025-08-11"} || Nama ${data.name || "-"} || Note ${data.note || ""} || Pax ${data.pax || "1"}`;
-    const username = data.merchant;
+    const username = data.mitra;
 
     // Request ke API untuk update saldo
     const formdata = new FormData();
