@@ -288,6 +288,8 @@ app.post('/create-qris', async (req, res) => {
       response_raw: result,
       created_at: new Date().toISOString(),
       status: "PENDING",
+      qris_url: result?.imageqris || null,
+      qris_image_base64: qrisImageBuffer || null,
 
       // 🔹 Tambahkan field tambahan dari frontend
       nama: body.nama,
