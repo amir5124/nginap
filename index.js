@@ -426,21 +426,11 @@ app.post('/create-va-carter', async (req, res) => {
       status: "PENDING",
 
       // 🔹 Tambahkan field tambahan dari frontend
-      // nama: body.nama,
-      // title: body.title,
-      // invoice: body.invoice,
-      // tanggal: body.tanggal,
-      // tanggalcheckin: body.tanggalcheckin,
-      // tanggalcheckout: body.tanggalcheckout,
-      // jumlahkamar: body.jumlahkamar,
-      // jumlahdewasa: body.jumlahdewasa,
-      // jumlahanak: body.jumlahanak,
-      // jumlahmalam: body.jumlahmalam,
-      // tamu: body.tamu,
-      // namakamar: body.namakamar,
-      // catatan: body.catatan,
-      // merchant: body.merchant,
-      // mitra: body.mitra,
+      nama: body.name,
+      note: body.note,
+      driver: body.driver,
+
+
     };
 
     // 💾 Simpan ke Firebase Realtime Database
@@ -524,21 +514,10 @@ app.post('/create-qris-carter', async (req, res) => {
       qris_image_base64: qrisImageBuffer || null,
 
       // 🔹 Tambahkan field tambahan dari frontend
-      // nama: body.nama,
-      // title: body.title,
-      // invoice: body.invoice,
-      // tanggal: body.tanggal,
-      // tanggalcheckin: body.tanggalcheckin,
-      // tanggalcheckout: body.tanggalcheckout,
-      // jumlahkamar: body.jumlahkamar,
-      // jumlahdewasa: body.jumlahdewasa,
-      // jumlahanak: body.jumlahanak,
-      // jumlahmalam: body.jumlahmalam,
-      // tamu: body.tamu,
-      // namakamar: body.namakamar,
-      // catatan: body.catatan,
-      // merchant: body.merchant,
-      // mitra: body.mitra,
+      nama: body.name,
+      note: body.note,
+      driver: body.driver,
+
     };
 
     // 💾 Simpan ke Firebase Realtime Database
