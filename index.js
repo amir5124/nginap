@@ -371,6 +371,239 @@ app.get('/download-qr/:partner_reff', async (req, res) => {
   }
 });
 
+app.post('/create-va-carter', async (req, res) => {
+  try {
+    const body = req.body;
+    const partner_reff = generatePartnerReff();
+    const expired = getExpiredTimestamp();
+    const url_callback = "https://hotel.siappgo.id/callback";
+    const user = body.nama;
+
+    const signature = generateSignaturePOST({
+      amount: body.amount,
+      expired,
+      bank_code: body.bank_code,
+      partner_reff,
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      customer_email: body.customer_email,
+      clientId,
+      serverKey
+    });
+
+    const payload = {
+      ...body,
+      partner_reff,
+      username,
+      pin,
+      expired,
+      signature,
+      url_callback
+    };
+
+    const headers = {
+      'client-id': clientId,
+      'client-secret': clientSecret
+    };
+
+    const url = 'https://api.linkqu.id/linkqu-partner/transaction/create/va';
+    const response = await axios.post(url, payload, { headers });
+    const result = response.data;
+
+    // 🔹 Data untuk Firebase
+    const insertData = {
+      partner_reff,
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      amount: body.amount,
+      bank_code: result?.bank_name || body.bank_code || null,
+      expired,
+      customer_phone: body.customer_phone || null,
+      customer_email: body.customer_email,
+      va_number: result?.virtual_account || null,
+      response_raw: result,
+      created_at: new Date().toISOString(),
+      status: "PENDING",
+
+      // 🔹 Tambahkan field tambahan dari frontend
+      // nama: body.nama,
+      // title: body.title,
+      // invoice: body.invoice,
+      // tanggal: body.tanggal,
+      // tanggalcheckin: body.tanggalcheckin,
+      // tanggalcheckout: body.tanggalcheckout,
+      // jumlahkamar: body.jumlahkamar,
+      // jumlahdewasa: body.jumlahdewasa,
+      // jumlahanak: body.jumlahanak,
+      // jumlahmalam: body.jumlahmalam,
+      // tamu: body.tamu,
+      // namakamar: body.namakamar,
+      // catatan: body.catatan,
+      // merchant: body.merchant,
+      // mitra: body.mitra,
+    };
+
+    // 💾 Simpan ke Firebase Realtime Database
+    await set(ref(databaseFire, `inquiry_va_carter/${partner_reff}`), insertData);
+
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Gagal membuat VA:', err.message);
+    res.status(500).json({
+      error: "Gagal membuat VA",
+      detail: err.response?.data || err.message
+    });
+  }
+});
+
+
+// ✅ Endpoint POST untuk membuat QRIS
+app.post('/create-qris-carter', async (req, res) => {
+  try {
+    const body = req.body;
+    const partner_reff = generatePartnerReff();
+    const expired = getExpiredTimestamp();
+    const url_callback = "https://hotel.siappgo.id/callback";
+    const user = body.nama;
+
+    const signature = generateSignatureQRIS({
+      amount: body.amount,
+      expired,
+      partner_reff,
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      customer_email: body.customer_email,
+      clientId,
+      serverKey
+    });
+
+    const payload = {
+      ...body,
+      partner_reff,
+      username,
+      pin,
+      expired,
+      signature,
+      url_callback
+    };
+
+    const headers = {
+      'client-id': clientId,
+      'client-secret': clientSecret
+    };
+
+    const url = 'https://api.linkqu.id/linkqu-partner/transaction/create/qris';
+    const response = await axios.post(url, payload, { headers });
+
+    const result = response.data;
+
+    let qrisImageBuffer = null;
+    if (result?.imageqris) {
+      try {
+        const imgResp = await axios.get(result.imageqris.trim(), { responseType: 'arraybuffer' });
+        qrisImageBuffer = Buffer.from(imgResp.data).toString('base64'); // simpan base64 ke Firebase
+      } catch (err) {
+        console.error("⚠️ Failed to download QRIS image:", err.message);
+      }
+    }
+
+    const insertData = {
+      partner_reff,
+      customer_id: body.customer_id,
+      customer_name: body.customer_name,
+      amount: body.amount,
+      bank_code: result?.bank_name || body.bank_code || null,
+      expired,
+      customer_phone: body.customer_phone || null,
+      customer_email: body.customer_email,
+      va_number: result?.virtual_account || null,
+      response_raw: result,
+      created_at: new Date().toISOString(),
+      status: "PENDING",
+      qris_url: result?.imageqris || null,
+      qris_image_base64: qrisImageBuffer || null,
+
+      // 🔹 Tambahkan field tambahan dari frontend
+      // nama: body.nama,
+      // title: body.title,
+      // invoice: body.invoice,
+      // tanggal: body.tanggal,
+      // tanggalcheckin: body.tanggalcheckin,
+      // tanggalcheckout: body.tanggalcheckout,
+      // jumlahkamar: body.jumlahkamar,
+      // jumlahdewasa: body.jumlahdewasa,
+      // jumlahanak: body.jumlahanak,
+      // jumlahmalam: body.jumlahmalam,
+      // tamu: body.tamu,
+      // namakamar: body.namakamar,
+      // catatan: body.catatan,
+      // merchant: body.merchant,
+      // mitra: body.mitra,
+    };
+
+    // 💾 Simpan ke Firebase Realtime Database
+    await set(ref(databaseFire, `inquiry_qris_carter/${partner_reff}`), insertData);
+
+    res.json(result);
+
+  } catch (err) {
+    console.error(`❌ Gagal membuat QRIS: ${err.message}`);
+    res.status(500).json({
+      error: "Gagal membuat QRIS",
+      detail: err.response?.data || err.message
+    });
+  }
+});
+
+
+app.get('/download-qr-carter/:partner_reff', async (req, res) => {
+  const partner_reff = req.params.partner_reff;
+
+  try {
+    // 🔹 Ambil data QRIS dari Firebase
+    const dbRef = ref(databaseFire, `inquiry_qris_hotel/${partner_reff}`);
+    const snapshot = await get(dbRef);
+
+    if (!snapshot.exists()) {
+      return res.status(404).send('QRIS tidak ditemukan di database.');
+    }
+
+    const data = snapshot.val();
+
+    // 1️⃣ Kalau sudah ada gambar base64, kirim langsung
+    if (data.qris_image_base64) {
+      console.log(`✅ QR ditemukan di Firebase (base64): ${partner_reff}`);
+      const imgBuffer = Buffer.from(data.qris_image_base64, 'base64');
+      res.setHeader('Content-Disposition', `attachment; filename="qris-${partner_reff}.png"`);
+      res.setHeader('Content-Type', 'image/png');
+      return res.send(imgBuffer);
+    }
+
+    // 2️⃣ Kalau belum ada base64 tapi ada URL, download dari URL
+    if (data.qris_url) {
+      console.log(`🔗 Download QR dari URL: ${data.qris_url}`);
+      const response = await axios.get(data.qris_url.trim(), { responseType: 'arraybuffer' });
+      const imgBuffer = Buffer.from(response.data);
+
+      // Simpan base64-nya ke Firebase supaya nanti tidak perlu download ulang
+      const base64Str = imgBuffer.toString('base64');
+      await set(ref(databaseFire, `inquiry_qris_hotel/${partner_reff}/qris_image_base64`), base64Str);
+
+      res.setHeader('Content-Disposition', `attachment; filename="qris-${partner_reff}.png"`);
+      res.setHeader('Content-Type', 'image/png');
+      return res.send(imgBuffer);
+    }
+
+    // Kalau tidak ada keduanya
+    return res.status(404).send('QRIS tidak memiliki data gambar.');
+
+  } catch (err) {
+    console.error(`❌ Error download QR: ${err.message}`);
+    res.status(500).send('Terjadi kesalahan server.');
+  }
+});
+
+
 function formatToWhatsAppNumber(localNumber) {
   if (typeof localNumber !== 'string') {
     return null; // Pastikan input berupa string
