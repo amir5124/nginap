@@ -561,7 +561,7 @@ app.get('/download-qr-carter/:partner_reff', async (req, res) => {
 
   try {
     // 🔹 Ambil data QRIS dari Firebase
-    const dbRef = ref(databaseFire, `inquiry_qris_hotel/${partner_reff}`);
+    const dbRef = ref(databaseFire, `inquiry_qris_carter/${partner_reff}`);
     const snapshot = await get(dbRef);
 
     if (!snapshot.exists()) {
